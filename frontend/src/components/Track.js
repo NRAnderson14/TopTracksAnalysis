@@ -4,22 +4,24 @@ import TrackStatistics from "./TrackStatistics";
 const { Component } = require("react");
 
 class Track extends Component {
+  result = this.props.trackAnalysisResult;
+  track = this.result.track;
   stats = {
-    occurrences: this.props.trackAnalysisResult.occurrences,
-    firstAppearance: this.props.trackAnalysisResult.first_appearance,
-    latestAppearance: this.props.trackAnalysisResult.latest_appearance,
-    appearances: this.props.trackAnalysisResult.appearances,
-    averagePosition: this.props.trackAnalysisResult.average_position
+    occurrences: this.result.occurrences,
+    firstAppearance: this.result.first_appearance,
+    latestAppearance: this.result.latest_appearance,
+    appearances: this.result.appearances,
+    averagePosition: this.result.average_position
   };
 
   render() {
     return (
       <div className="track">
-        <p>{this.props.trackNumber}</p>
-        <Image href={this.props.trackAnalysisResult.track.album.images[2].url} alt={this.props.trackAnalysisResult.track.album.name} />
+        <p className="track-number">{this.props.trackNumber}</p>
+        <Image href={this.track.album.images[2].url} alt={this.track.album.name} />
         <div className="track-info">
-          <p>{this.props.trackAnalysisResult.track.name}</p>
-          <p>{this.props.trackAnalysisResult.track.artists[0].name}</p>
+          <p><b>{this.track.name}</b></p>
+          <p>{this.track.artists[0].name}</p>
         </div>
         <TrackStatistics stats={this.stats} />
       </div>

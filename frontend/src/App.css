@@ -1,7 +1,7 @@
 /* Palette used: https://coolors.co/f2c57c-ddae7e-7fb685-426a5a-ef6f6c */
 
 body {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: Circular,Helvetica,Arial,sans-serif;
   background-color: #DDAE7E;
   color: #426A5A;
   margin: 2em;
@@ -20,26 +20,27 @@ body {
   box-shadow: 2px 2px 4px grey;
 }
 
-.track > p {
+.track-number {
   float: left;
-  margin: .25em;
+  margin: 1em;
 }
 
 .album-image {
   float: left;
-  margin: .25em;
+  margin: 1em;
 }
 
 .track-info {
   float: left;
-  margin: .25em;
+  margin: 1em;
 }
 
 .track-statistics {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  margin-left: .5em;
+  margin-right: 1em;
+  margin-left: auto;
 }
 
 .stat {
