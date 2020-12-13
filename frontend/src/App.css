@@ -1,0 +1,48 @@
+/* Palette used: https://coolors.co/f2c57c-ddae7e-7fb685-426a5a-ef6f6c */
+
+body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: #DDAE7E;
+  color: #426A5A;
+  margin: 2em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.track {
+  background-color: #EF6F6C;
+  width: 100%;
+  margin-bottom: 1em;
+  padding: .5em;
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-shadow: 2px 2px 4px grey;
+}
+
+.track > p {
+  float: left;
+  margin: .25em;
+}
+
+.album-image {
+  float: left;
+  margin: .25em;
+}
+
+.track-info {
+  float: left;
+  margin: .25em;
+}
+
+.track-statistics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-left: .5em;
+}
+
+.stat {
+  margin-left: .5em;
+  padding-left: 1em;
+}
