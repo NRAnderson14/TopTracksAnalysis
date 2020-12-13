@@ -7,14 +7,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Album {
-    
+
     private String albumType;
     private List<Artist> artists;
     private List<String> availableMarkets;
     private Map<String, String> externalUrls;
     private String href;
     private String id;
-    // private List<Image> images;
+    private List<Image> images;
     private String name;
     private String type;
     private String uri;
@@ -67,6 +67,14 @@ public class Album {
         this.id = id;
     }
 
+    public List<Image> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Image> images) {
+        this.images = images;
+    }
+
     public String getName() {
         return name;
     }
@@ -94,8 +102,8 @@ public class Album {
     @Override
     public String toString() {
         return "Album [albumType=" + albumType + ", artists=" + artists + ", availableMarkets=" + availableMarkets
-                + ", externalUrls=" + externalUrls + ", href=" + href + ", id=" + id + ", name=" + name + ", type="
-                + type + ", uri=" + uri + "]";
+                + ", externalUrls=" + externalUrls + ", href=" + href + ", id=" + id + ", images=" + images + ", name="
+                + name + ", type=" + type + ", uri=" + uri + "]";
     }
 
 }
