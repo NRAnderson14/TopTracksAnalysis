@@ -41,9 +41,9 @@ public class AnalysisService {
         TrackAnalysisResult result = new TrackAnalysisResult();
         result.setTrack(allTrackOccurrences.get(0).getTrack());
         result.setOccurrences(maxOccurrences.getValue().intValue());
-        result.setFirstOccurrence(
+        result.setFirstAppearance(
                 allTrackOccurrences.stream().min(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
-        result.setLatestOccurrence(
+        result.setLatestAppearance(
                 allTrackOccurrences.stream().max(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
 
         return result;
@@ -68,9 +68,9 @@ public class AnalysisService {
             result = new TrackAnalysisResult();
             result.setTrack(entry.get(0).getTrack());
             result.setOccurrences(entry.size());
-            result.setFirstOccurrence(
+            result.setFirstAppearance(
                     entry.stream().min(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
-            result.setLatestOccurrence(
+            result.setLatestAppearance(
                     entry.stream().max(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
             result.setAppearances(entry.stream().map(item -> item.getAddedAt()).collect(Collectors.toList()));
 
@@ -88,7 +88,7 @@ public class AnalysisService {
             results.add(result);
         }
 
-        results.sort(Comparator.comparing(TrackAnalysisResult::getOccurrences));
+        results.sort(Comparator.comparing(TrackAnalysisResult::getOccurrences).reversed());
         return results;
     }
 

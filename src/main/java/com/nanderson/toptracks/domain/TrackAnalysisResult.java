@@ -7,8 +7,8 @@ public class TrackAnalysisResult {
 
     private Track track;
     private int occurrences;
-    private Date firstOccurrence; // change to object later
-    private Date latestOccurrence;
+    private Date firstAppearance; // change to object later
+    private Date latestAppearance;
     private List<Date> appearances;
     private int averagePosition;
 
@@ -28,20 +28,20 @@ public class TrackAnalysisResult {
         this.occurrences = occurrences;
     }
 
-    public Date getFirstOccurrence() {
-        return firstOccurrence;
+    public Date getFirstAppearance() {
+        return firstAppearance;
     }
 
-    public void setFirstOccurrence(Date firstOccurrence) {
-        this.firstOccurrence = firstOccurrence;
+    public void setFirstAppearance(Date firstAppearance) {
+        this.firstAppearance = firstAppearance;
     }
 
-    public Date getLatestOccurrence() {
-        return latestOccurrence;
+    public Date getLatestAppearance() {
+        return latestAppearance;
     }
 
-    public void setLatestOccurrence(Date latestOccurrence) {
-        this.latestOccurrence = latestOccurrence;
+    public void setLatestAppearance(Date latestAppearance) {
+        this.latestAppearance = latestAppearance;
     }
 
     public List<Date> getAppearances() {
@@ -63,7 +63,7 @@ public class TrackAnalysisResult {
     @Override
     public String toString() {
         return "TrackAnalysisResult [appearances=" + appearances + ", averagePosition=" + averagePosition
-                + ", firstOccurrence=" + firstOccurrence + ", latestOccurrence=" + latestOccurrence + ", occurrences="
+                + ", firstAppearance=" + firstAppearance + ", latestAppearance=" + latestAppearance + ", occurrences="
                 + occurrences + ", track=" + track + "]";
     }
 
