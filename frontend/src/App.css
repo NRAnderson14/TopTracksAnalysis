@@ -28,6 +28,8 @@ body {
 .album-image {
   float: left;
   margin: 1em;
+  border-radius: 2px;
+  box-shadow: 2px 2px 3px grey;
 }
 
 .track-info {
@@ -39,11 +41,16 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  margin-right: 1em;
+  margin-right: .5em;
   margin-left: auto;
 }
 
 .stat {
   margin-left: .5em;
   padding-left: 1em;
+  padding-right: 1em;
+  background-color: #ca5d5b;
+  color: #2b443a;
+  border-radius: 2px;
+  box-shadow: 1px 1px 2px rgb(94, 93, 93);
 }

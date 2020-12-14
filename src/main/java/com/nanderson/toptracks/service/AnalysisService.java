@@ -88,7 +88,8 @@ public class AnalysisService {
             results.add(result);
         }
 
-        results.sort(Comparator.comparing(TrackAnalysisResult::getOccurrences).reversed());
+        results.sort(Comparator.comparing(TrackAnalysisResult::getOccurrences).reversed()
+                .thenComparing(TrackAnalysisResult::getAveragePosition));
         return results;
     }
 
