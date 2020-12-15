@@ -6,12 +6,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.nanderson.toptracks.domain.Album;
 import com.nanderson.toptracks.domain.AlbumAnalysisResult;
+import com.nanderson.toptracks.domain.AnalysisResult;
+import com.nanderson.toptracks.domain.Artist;
 import com.nanderson.toptracks.domain.ArtistAnalysisResult;
 import com.nanderson.toptracks.domain.PlaylistDetail;
 import com.nanderson.toptracks.domain.PlaylistItem;
+import com.nanderson.toptracks.domain.Track;
 import com.nanderson.toptracks.domain.TrackAnalysisResult;
 import com.nanderson.toptracks.exception.AnalysisException;
 
@@ -26,8 +32,8 @@ public class AnalysisService {
 
     public TrackAnalysisResult getMostPopularTrack(List<PlaylistDetail> playlistsToAnalyze) throws AnalysisException {
         List<PlaylistItem> itemsAggregated = aggregatePlaylists(playlistsToAnalyze);
-
-        Map<String, Long> trackIdFrequencies = countTrackIdOccurrences(itemsAggregated);
+        Function<PlaylistItem, String> trackIdMapper = (PlaylistItem item) -> item.getTrack().getId();
+        Map<String, Long> trackIdFrequencies = countIdOccurrences(itemsAggregated, trackIdMapper);
 
         Entry<String, Long> maxOccurrences = trackIdFrequencies.entrySet().stream().max(Entry.comparingByValue())
                 .orElseThrow(() -> new AnalysisException("Unable to find a single most popular track."));
@@ -37,7 +43,7 @@ public class AnalysisService {
                 .filter(item -> trackId.equals(item.getTrack().getId())).collect(Collectors.toList());
 
         TrackAnalysisResult result = new TrackAnalysisResult();
-        result.setTrack(allTrackOccurrences.get(0).getTrack());
+        result.setAnalysisItem(allTrackOccurrences.get(0).getTrack());
         result.setOccurrences(maxOccurrences.getValue().intValue());
         result.setFirstAppearance(
                 allTrackOccurrences.stream().min(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
@@ -47,24 +53,62 @@ public class AnalysisService {
         return result;
     }
 
+    @SuppressWarnings(value = "unchecked")
     public List<TrackAnalysisResult> getSortedMultiOccurrenceTracks(List<PlaylistDetail> playlistsToAnalyze)
             throws AnalysisException {
+        Function<PlaylistItem, String> trackIdMapper = (PlaylistItem item) -> item.getTrack().getId();
+        Function<List<PlaylistItem>, Track> trackMapper = (List<PlaylistItem> items) -> items.get(0).getTrack();
+        Supplier<TrackAnalysisResult> trackAnalysisResultSupplier = () -> new TrackAnalysisResult();
+
+        return (List<TrackAnalysisResult>) getSortedMultiOccurrences(playlistsToAnalyze, trackIdMapper, trackMapper,
+                trackAnalysisResultSupplier);
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    public List<ArtistAnalysisResult> getSortedMultiOccurrenceArtists(List<PlaylistDetail> playlistsToAnalyze)
+            throws AnalysisException {
+        Function<PlaylistItem, String> artistIdMapper = (PlaylistItem item) -> item.getTrack().getArtists().get(0)
+                .getId();
+        Function<List<PlaylistItem>, Artist> artistMapper = (List<PlaylistItem> items) -> items.get(0).getTrack()
+                .getArtists().get(0);
+        Supplier<ArtistAnalysisResult> artistAnalysisResultSupplier = () -> new ArtistAnalysisResult();
+
+        return (List<ArtistAnalysisResult>) getSortedMultiOccurrences(playlistsToAnalyze, artistIdMapper, artistMapper,
+                artistAnalysisResultSupplier);
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    public List<AlbumAnalysisResult> getSortedMultiOccurrenceAlbums(List<PlaylistDetail> playlistsToAnalyze)
+            throws AnalysisException {
+        Function<PlaylistItem, String> albumIdMapper = (PlaylistItem item) -> item.getTrack().getAlbum().getId();
+        Function<List<PlaylistItem>, Album> albumMapper = (List<PlaylistItem> items) -> items.get(0).getTrack()
+                .getAlbum();
+        Supplier<AlbumAnalysisResult> albumAnalysisResultSupplier = () -> new AlbumAnalysisResult();
+
+        return (List<AlbumAnalysisResult>) getSortedMultiOccurrences(playlistsToAnalyze, albumIdMapper, albumMapper,
+                albumAnalysisResultSupplier);
+    }
+
+    private <T> List<? extends AnalysisResult<T>> getSortedMultiOccurrences(List<PlaylistDetail> playlistsToAnalyze,
+            Function<PlaylistItem, String> idMapper, Function<List<PlaylistItem>, T> itemMapper,
+            Supplier<? extends AnalysisResult<T>> classSupplier) throws AnalysisException {
+
         List<PlaylistItem> itemsAggregated = aggregatePlaylists(playlistsToAnalyze);
-        Map<String, Long> trackIdFrequencies = countTrackIdOccurrences(itemsAggregated);
-        Map<String, Long> multiOccurrenceTrackFrequencies = trackIdFrequencies.entrySet().stream()
+        Map<String, Long> idFrequencies = countIdOccurrences(itemsAggregated, idMapper);
+        Map<String, Long> multiOccurrenceFrequencies = idFrequencies.entrySet().stream()
                 .filter(entry -> entry.getValue() > 1)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        Set<String> multiOccurrenceTrackIds = multiOccurrenceTrackFrequencies.keySet();
+        Set<String> multiOccurrenceIds = multiOccurrenceFrequencies.keySet();
         List<PlaylistItem> multiOccurenceItems = itemsAggregated.stream()
-                .filter(item -> multiOccurrenceTrackIds.contains(item.getTrack().getId())).collect(Collectors.toList());
+                .filter(item -> multiOccurrenceIds.contains(idMapper.apply(item))).collect(Collectors.toList());
         Map<String, List<PlaylistItem>> itemsGroupedById = multiOccurenceItems.stream()
-                .collect(Collectors.groupingBy((PlaylistItem item) -> item.getTrack().getId()));
+                .collect(Collectors.groupingBy(idMapper));
 
-        List<TrackAnalysisResult> results = new ArrayList<>();
-        TrackAnalysisResult result;
+        List<AnalysisResult<T>> results = new ArrayList<>();
+        AnalysisResult<T> result;
         for (List<PlaylistItem> entry : itemsGroupedById.values()) {
-            result = new TrackAnalysisResult();
-            result.setTrack(entry.get(0).getTrack());
+            result = classSupplier.get();
+            result.setAnalysisItem(itemMapper.apply(entry));
             result.setOccurrences(entry.size());
             result.setFirstAppearance(
                     entry.stream().min(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
@@ -86,100 +130,8 @@ public class AnalysisService {
             results.add(result);
         }
 
-        results.sort(Comparator.comparing(TrackAnalysisResult::getOccurrences).reversed()
-                .thenComparing(TrackAnalysisResult::getAveragePosition));
-        return results;
-    }
-
-    public List<ArtistAnalysisResult> getSortedMultiOccurrenceArtists(List<PlaylistDetail> playlistsToAnalyze)
-            throws AnalysisException {
-        List<PlaylistItem> itemsAggregated = aggregatePlaylists(playlistsToAnalyze);
-        Map<String, Long> artistIdFrequencies = countArtistIdOccurrences(itemsAggregated);
-        Map<String, Long> multiOccurrenceArtistFrequencies = artistIdFrequencies.entrySet().stream()
-                .filter(entry -> entry.getValue() > 1)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        Set<String> multiOccurrenceArtistIds = multiOccurrenceArtistFrequencies.keySet();
-        List<PlaylistItem> multiOccurenceItems = itemsAggregated.stream()
-                .filter(item -> multiOccurrenceArtistIds.contains(item.getTrack().getArtists().get(0).getId()))
-                .collect(Collectors.toList());
-        Map<String, List<PlaylistItem>> itemsGroupedById = multiOccurenceItems.stream()
-                .collect(Collectors.groupingBy((PlaylistItem item) -> item.getTrack().getArtists().get(0).getId()));
-
-        List<ArtistAnalysisResult> results = new ArrayList<>();
-        ArtistAnalysisResult result;
-        for (List<PlaylistItem> entry : itemsGroupedById.values()) {
-            result = new ArtistAnalysisResult();
-            result.setArtist(entry.get(0).getTrack().getArtists().get(0));
-            result.setOccurrences(entry.size());
-            result.setFirstAppearance(
-                    entry.stream().min(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
-            result.setLatestAppearance(
-                    entry.stream().max(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
-            result.setAppearances(entry.stream().map(item -> item.getAddedAt()).collect(Collectors.toList()));
-
-            List<Integer> positions = new ArrayList<>();
-            for (PlaylistItem item : entry) {
-                PlaylistDetail owningPlaylist = playlistsToAnalyze.stream()
-                        .filter(playlistDetail -> item.getBelongsTo().equals(playlistDetail.getBelongsTo()))
-                        .collect(Collectors.toList()).get(0);
-                positions.add(getTrackPosition(item.getTrack().getId(), owningPlaylist)); // I think this works here
-                                                                                          // still?
-            }
-
-            result.setAveragePosition(
-                    positions.stream().collect(Collectors.averagingInt(Integer::intValue)).intValue());
-
-            results.add(result);
-        }
-
-        results.sort(Comparator.comparing(ArtistAnalysisResult::getOccurrences).reversed()
-                .thenComparing(ArtistAnalysisResult::getAveragePosition));
-        return results;
-    }
-
-    public List<AlbumAnalysisResult> getSortedMultiOccurrenceAlbums(List<PlaylistDetail> playlistsToAnalyze)
-            throws AnalysisException {
-        List<PlaylistItem> itemsAggregated = aggregatePlaylists(playlistsToAnalyze);
-        Map<String, Long> albumIdFrequencies = countAlbumIdOccurrences(itemsAggregated);
-        Map<String, Long> multiOccurrenceAlbumFrequencies = albumIdFrequencies.entrySet().stream()
-                .filter(entry -> entry.getValue() > 1)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        Set<String> multiOccurrenceAlbumIds = multiOccurrenceAlbumFrequencies.keySet();
-        List<PlaylistItem> multiOccurenceItems = itemsAggregated.stream()
-                .filter(item -> multiOccurrenceAlbumIds.contains(item.getTrack().getAlbum().getId()))
-                .collect(Collectors.toList());
-        Map<String, List<PlaylistItem>> itemsGroupedById = multiOccurenceItems.stream()
-                .collect(Collectors.groupingBy((PlaylistItem item) -> item.getTrack().getAlbum().getId()));
-
-        List<AlbumAnalysisResult> results = new ArrayList<>();
-        AlbumAnalysisResult result;
-        for (List<PlaylistItem> entry : itemsGroupedById.values()) {
-            result = new AlbumAnalysisResult();
-            result.setAlbum(entry.get(0).getTrack().getAlbum());
-            result.setOccurrences(entry.size());
-            result.setFirstAppearance(
-                    entry.stream().min(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
-            result.setLatestAppearance(
-                    entry.stream().max(Comparator.comparing(PlaylistItem::getAddedAt)).get().getAddedAt());
-            result.setAppearances(entry.stream().map(item -> item.getAddedAt()).collect(Collectors.toList()));
-
-            List<Integer> positions = new ArrayList<>();
-            for (PlaylistItem item : entry) {
-                PlaylistDetail owningPlaylist = playlistsToAnalyze.stream()
-                        .filter(playlistDetail -> item.getBelongsTo().equals(playlistDetail.getBelongsTo()))
-                        .collect(Collectors.toList()).get(0);
-                positions.add(getTrackPosition(item.getTrack().getId(), owningPlaylist)); // I think this works here
-                                                                                          // still?
-            }
-
-            result.setAveragePosition(
-                    positions.stream().collect(Collectors.averagingInt(Integer::intValue)).intValue());
-
-            results.add(result);
-        }
-
-        results.sort(Comparator.comparing(AlbumAnalysisResult::getOccurrences).reversed()
-                .thenComparing(AlbumAnalysisResult::getAveragePosition));
+        results.sort(Comparator.comparing(AnalysisResult<T>::getOccurrences).reversed()
+                .thenComparing(AnalysisResult<T>::getAveragePosition));
         return results;
     }
 
@@ -188,19 +140,9 @@ public class AnalysisService {
                 .collect(Collectors.toList());
     }
 
-    private Map<String, Long> countTrackIdOccurrences(List<PlaylistItem> playlistItems) {
-        return playlistItems.stream()
-                .collect(Collectors.groupingBy((PlaylistItem item) -> item.getTrack().getId(), Collectors.counting()));
-    }
-
-    private Map<String, Long> countArtistIdOccurrences(List<PlaylistItem> playlistItems) {
-        return playlistItems.stream().collect(Collectors
-                .groupingBy((PlaylistItem item) -> item.getTrack().getArtists().get(0).getId(), Collectors.counting()));
-    }
-
-    private Map<String, Long> countAlbumIdOccurrences(List<PlaylistItem> playlistItems) {
-        return playlistItems.stream().collect(Collectors
-                .groupingBy((PlaylistItem item) -> item.getTrack().getAlbum().getId(), Collectors.counting()));
+    private Map<String, Long> countIdOccurrences(List<PlaylistItem> playlistItems,
+            Function<PlaylistItem, String> idMapper) {
+        return playlistItems.stream().collect(Collectors.groupingBy(idMapper, Collectors.counting()));
     }
 
     private int getTrackPosition(String trackId, PlaylistDetail playlistDetail) {

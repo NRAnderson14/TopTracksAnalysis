@@ -3,7 +3,7 @@ package com.nanderson.toptracks.domain;
 import java.util.Date;
 import java.util.List;
 
-public abstract class AnalysisResult {
+public abstract class AnalysisResult<T> {
 
     protected int occurrences;
     protected Date firstAppearance; // change to object later
@@ -11,6 +11,7 @@ public abstract class AnalysisResult {
     protected List<Date> appearances;
     protected int averagePosition;
     protected AnalysisType type;
+    protected T analysisItem;
 
     public int getOccurrences() {
         return occurrences;
@@ -60,11 +61,19 @@ public abstract class AnalysisResult {
         this.type = type;
     }
 
+    public T getAnalysisItem() {
+        return analysisItem;
+    }
+
+    public void setAnalysisItem(T analysisItem) {
+        this.analysisItem = analysisItem;
+    }
+
     @Override
     public String toString() {
-        return "AnalysisResult [appearances=" + appearances + ", averagePosition=" + averagePosition
-                + ", firstAppearance=" + firstAppearance + ", latestAppearance=" + latestAppearance + ", occurrences="
-                + occurrences + ", type=" + type + "]";
+        return "AnalysisResult [analysisItem=" + analysisItem + ", appearances=" + appearances + ", averagePosition="
+                + averagePosition + ", firstAppearance=" + firstAppearance + ", latestAppearance=" + latestAppearance
+                + ", occurrences=" + occurrences + ", type=" + type + "]";
     }
 
 }
