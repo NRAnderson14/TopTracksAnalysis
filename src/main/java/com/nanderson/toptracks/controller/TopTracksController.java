@@ -3,6 +3,8 @@ package com.nanderson.toptracks.controller;
 import java.util.List;
 import java.util.Optional;
 
+import com.nanderson.toptracks.domain.AnalysisResult;
+import com.nanderson.toptracks.domain.AnalysisType;
 import com.nanderson.toptracks.domain.Artist;
 import com.nanderson.toptracks.domain.Playlist;
 import com.nanderson.toptracks.domain.PlaylistDetail;
@@ -124,12 +126,27 @@ public class TopTracksController {
     }
 
     @GetMapping("user/playlists/recaps/multi_occurrences")
-    public ResponseEntity<List<TrackAnalysisResult>> getUserRecapsMultiOccurrences() {
-        ResponseEntity<List<TrackAnalysisResult>> response;
+    public ResponseEntity<List<? extends AnalysisResult>> getUserRecapsMultiOccurrences(
+            @RequestParam("type") String type) {
+        ResponseEntity<List<? extends AnalysisResult>> response;
 
         try {
             List<PlaylistDetail> recapPlaylists = apiService.getRecapPlaylistDetails();
-            response = ResponseEntity.ok(analysisService.getSortedMultiOccurrenceTracks(recapPlaylists));
+            AnalysisType analysisType = AnalysisType.getFromDescription(type);
+            switch (analysisType) {
+                case TRACK:
+                    response = ResponseEntity.ok(analysisService.getSortedMultiOccurrenceTracks(recapPlaylists));
+                    break;
+                case ARTIST:
+                    response = ResponseEntity.ok(analysisService.getSortedMultiOccurrenceArtists(recapPlaylists));
+                    break;
+                case ALBUM:
+                    response = ResponseEntity.ok(analysisService.getSortedMultiOccurrenceAlbums(recapPlaylists));
+                    break;
+                default:
+                    response = ResponseEntity.badRequest().build();
+                    break;
+            }
         } catch (Exception e) {
             logger.error("Error getting current user playlists", e);
             response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

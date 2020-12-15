@@ -9,7 +9,7 @@ class TrackList extends Component {
   };
 
   async componentDidMount() {
-    const response = await fetch("/user/playlists/recaps/multi_occurrences");
+    const response = await fetch("/user/playlists/recaps/multi_occurrences?type=track");
     const body = await response.json();
     this.setState({ trackList: body, isLoading: false });
   }
