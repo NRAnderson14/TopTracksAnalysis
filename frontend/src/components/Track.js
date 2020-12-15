@@ -5,7 +5,7 @@ const { Component } = require("react");
 
 class Track extends Component {
   result = this.props.trackAnalysisResult;
-  track = this.result.track;
+  track = this.result.analysis_item; // Presumably being passed the correct type
   stats = {
     occurrences: this.result.occurrences,
     firstAppearance: this.result.first_appearance,
