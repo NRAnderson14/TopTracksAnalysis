@@ -25,10 +25,6 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class ApiService {
-    // 1NUOfvAhA9AvsF1ISMkgHX - Saosin
-    // 5LyRnL0rysObxDRxzSfV1z - Counterparts
-
-    // 0SSzeyebCU5siowO5SAoZG - Architects Playlist
 
     private static final Logger logger = LoggerFactory.getLogger(ApiService.class);
 
@@ -54,14 +50,26 @@ public class ApiService {
         ResponseEntity<UserPlaylists> userPlaylistsResponse = restTemplate.exchange(getUrlForEndpoint("me/playlists"),
                 HttpMethod.GET, getEntity(), UserPlaylists.class);
 
-        return extractBody(userPlaylistsResponse);
+        UserPlaylists playlists = extractBody(userPlaylistsResponse);
+
+        while (playlists.getNext() != null) {
+            userPlaylistsResponse = restTemplate.exchange(playlists.getNext(), HttpMethod.GET, getEntity(),
+                    UserPlaylists.class);
+            UserPlaylists newBody = extractBody(userPlaylistsResponse);
+            playlists.getItems().addAll(newBody.getItems());
+            playlists.setOffset(newBody.getOffset());
+            playlists.setPrevious(newBody.getPrevious());
+            playlists.setNext(newBody.getNext());
+        }
+
+        return playlists;
     }
 
     public List<Playlist> getUserYearlyRecapPlaylists() throws SpotifyAPIException {
         UserPlaylists allPlaylists = getUserPlaylists();
 
-        return allPlaylists.getItems().stream().filter(playlist -> playlist.getName().startsWith("Your Top Songs"))
-                .collect(Collectors.toList());
+        return allPlaylists.getItems().stream().filter(playlist -> playlist.getName().startsWith("Your Top Songs")
+                || playlist.getName().endsWith("Top Tracks")).collect(Collectors.toList());
     }
 
     public PlaylistDetail getPlaylistDetail(Playlist playlist) throws SpotifyAPIException {
