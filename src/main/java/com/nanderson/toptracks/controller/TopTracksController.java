@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import com.nanderson.toptracks.domain.AnalysisResult;
 import com.nanderson.toptracks.domain.AnalysisType;
-import com.nanderson.toptracks.domain.Artist;
 import com.nanderson.toptracks.domain.Playlist;
 import com.nanderson.toptracks.domain.PlaylistDetail;
 import com.nanderson.toptracks.domain.TrackAnalysisResult;
@@ -20,10 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 public class TopTracksController {
@@ -37,21 +34,6 @@ public class TopTracksController {
         super();
         this.apiService = apiService;
         this.analysisService = analysisService;
-    }
-
-    @GetMapping(path = "/artist/{id}")
-    public ResponseEntity<Artist> getArtist(@PathVariable("id") String id) {
-        ResponseEntity<Artist> response;
-
-        try {
-            response = ResponseEntity.ok(apiService.getArtistInfo(id));
-        } catch (Exception e) {
-            logger.error("Error retrieving artist info from Spotify", e);
-            response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return response;
-        // return createResponse(() -> artistService.getArtistInfo(id));
     }
 
     @GetMapping("/user/info")
@@ -155,33 +137,20 @@ public class TopTracksController {
         return response;
     }
 
-    // private <T> ResponseEntity<T> createResponse(Supplier<T> handlingMethod) {
-    // ResponseEntity<T> response;
-
-    // try {
-    // response = ResponseEntity.ok(handlingMethod.get());
-    // } catch (Exception e) {
-    // logger.error("Error encountered", e);
-    // response = new ResponseEntity<T>(HttpStatus.INTERNAL_SERVER_ERROR);
-    // }
-
-    // return response;
-    // }
-
     @GetMapping(path = "/login")
-    public RedirectView login() {
-        return new RedirectView(apiService.getUrlForLogin());
+    public ResponseEntity<String> login() {
+        return ResponseEntity.ok(apiService.getUrlForLogin());
     }
 
     @GetMapping(path = "/receive_code")
-    public RedirectView receiveCode(@RequestParam("code") String authCode,
+    public ResponseEntity<Void> receiveCode(@RequestParam("code") String authCode,
             @RequestParam(name = "state") Optional<String> state,
             @RequestParam(name = "error") Optional<String> error) {
         try {
             apiService.postAuthorizeUser(authCode, state, error);
-            return new RedirectView("http://localhost:8080/user/info");
+            return ResponseEntity.ok().build();
         } catch (SpotifyAPIException e) {
-            return new RedirectView("http://localhost:8080/error");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 

@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.nanderson.toptracks.config.UrlConfiguration;
-import com.nanderson.toptracks.domain.Artist;
 import com.nanderson.toptracks.domain.Playlist;
 import com.nanderson.toptracks.domain.PlaylistDetail;
 import com.nanderson.toptracks.domain.UserInfo;
@@ -95,17 +94,8 @@ public class ApiService {
         return playlistDetails;
     }
 
-    public Artist getArtistInfo(String artistID) throws SpotifyAPIException {
-        String endpoint = String.format("artists/%s?market=US", artistID);
-
-        ResponseEntity<Artist> artistResponse = restTemplate.exchange(getUrlForEndpoint(endpoint), HttpMethod.GET,
-                getEntity(), Artist.class);
-
-        return extractBody(artistResponse);
-    }
-
     public String getUrlForLogin() {
-        return "https://accounts.spotify.com/en/authorize?client_id=aa67e55ded024973b5b81a51abdbfe15&scope=playlist-read-private&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Freceive_code%2F";
+        return "https://accounts.spotify.com/en/authorize?client_id=aa67e55ded024973b5b81a51abdbfe15&scope=playlist-read-private&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F";
     }
 
     public void postAuthorizeUser(String authCode, Optional<String> state, Optional<String> error)

@@ -1,9 +1,6 @@
 const { Component } = require("react");
 
 class TrackStatistics extends Component {
-  getYear = function (dateString) {
-    return new Date(dateString).getFullYear();
-  }
 
   render() {
     return (
@@ -12,14 +9,14 @@ class TrackStatistics extends Component {
           <p>Occurrences: {this.props.stats.occurrences}</p>
         </div>
         <div className="stat">
-          <p>First Appearance: {this.getYear(this.props.stats.firstAppearance)}</p>
-          <p>Latest Appearance: {this.getYear(this.props.stats.latestAppearance)}</p>
+          <p>First Appearance: {this.props.dateFormatter(this.props.stats.firstAppearance)}</p>
+          <p>Latest Appearance: {this.props.dateFormatter(this.props.stats.latestAppearance)}</p>
         </div>
         <div className="stat">
           <p>All Appearances</p>
           <ul>
             {this.props.stats.appearances.map(appearance =>
-              <li>{this.getYear(appearance)}</li>
+              <li>{appearance}</li>
             )}
           </ul>
         </div>

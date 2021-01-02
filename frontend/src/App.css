@@ -9,7 +9,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.track {
+.analysis-link {
+  background-color: #EF6F6C;
+  width: 25%;
+  padding: .5em;
+  padding-left: 1em;
+  margin: 1em;
+  margin-left: 0em;
+  box-shadow: 2px 2px 4px grey;
+  text-decoration: none;
+  color: #426A5A;
+}
+
+a {
+  color: #426A5A;
+  text-decoration: none;
+}
+
+.analysis-link:hover {
+  box-shadow: 3px 3px 8px grey;
+}
+
+.back-button {
+  float: right;
+}
+
+.track, .artist, .album {
   background-color: #EF6F6C;
   width: 100%;
   margin-bottom: 1em;
@@ -20,7 +45,7 @@ body {
   box-shadow: 2px 2px 4px grey;
 }
 
-.track-number {
+.track-number, .artist-number, .album-number {
   float: left;
   margin: 1em;
 }
@@ -32,7 +57,7 @@ body {
   box-shadow: 2px 2px 3px grey;
 }
 
-.track-info {
+.track-info, .artist-info, .album-info {
   float: left;
   margin: 1em;
 }
