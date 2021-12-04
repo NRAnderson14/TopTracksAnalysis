@@ -56,7 +56,7 @@ public class AnalysisService {
     @SuppressWarnings(value = "unchecked")
     public List<TrackAnalysisResult> getSortedMultiOccurrenceTracks(List<PlaylistDetail> playlistsToAnalyze)
             throws AnalysisException {
-        Function<PlaylistItem, String> trackIdMapper = (PlaylistItem item) -> item.getTrack().getId();
+        Function<PlaylistItem, String> trackIdMapper = (PlaylistItem item) -> item.getTrack().getName();
         Function<List<PlaylistItem>, Track> trackMapper = (List<PlaylistItem> items) -> items.get(0).getTrack();
         Supplier<TrackAnalysisResult> trackAnalysisResultSupplier = () -> new TrackAnalysisResult();
 
@@ -68,7 +68,7 @@ public class AnalysisService {
     public List<ArtistAnalysisResult> getSortedMultiOccurrenceArtists(List<PlaylistDetail> playlistsToAnalyze)
             throws AnalysisException {
         Function<PlaylistItem, String> artistIdMapper = (PlaylistItem item) -> item.getTrack().getArtists().get(0)
-                .getId();
+                .getName();
         Function<List<PlaylistItem>, Artist> artistMapper = (List<PlaylistItem> items) -> items.get(0).getTrack()
                 .getArtists().get(0);
         Supplier<ArtistAnalysisResult> artistAnalysisResultSupplier = () -> new ArtistAnalysisResult();
@@ -80,7 +80,7 @@ public class AnalysisService {
     @SuppressWarnings(value = "unchecked")
     public List<AlbumAnalysisResult> getSortedMultiOccurrenceAlbums(List<PlaylistDetail> playlistsToAnalyze)
             throws AnalysisException {
-        Function<PlaylistItem, String> albumIdMapper = (PlaylistItem item) -> item.getTrack().getAlbum().getId();
+        Function<PlaylistItem, String> albumIdMapper = (PlaylistItem item) -> item.getTrack().getAlbum().getName();
         Function<List<PlaylistItem>, Album> albumMapper = (List<PlaylistItem> items) -> items.get(0).getTrack()
                 .getAlbum();
         Supplier<AlbumAnalysisResult> albumAnalysisResultSupplier = () -> new AlbumAnalysisResult();

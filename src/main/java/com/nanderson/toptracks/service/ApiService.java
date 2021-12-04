@@ -1,6 +1,10 @@
 package com.nanderson.toptracks.service;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -78,7 +82,15 @@ public class ApiService {
         PlaylistDetail playlistDetail = extractBody(playlistDetailResponse);
         // Setting a callback to the owning playlist for analysis purposes later
         playlistDetail.setBelongsTo(playlist.getId());
-        playlistDetail.getItems().stream().forEach(item -> item.setBelongsTo(playlist.getId()));
+        if ("Your Top Songs 2021".equals(playlist.getName())) {
+            LocalDateTime correctDate = LocalDateTime.of(2021, Month.DECEMBER, 1, 0, 0);
+            playlistDetail.getItems().stream().forEach(item -> {
+                item.setBelongsTo(playlist.getId());
+                item.setAddedAt(Date.from(correctDate.toInstant(ZoneOffset.ofHours(0))));
+            });
+        } else {
+            playlistDetail.getItems().stream().forEach(item -> item.setBelongsTo(playlist.getId()));
+        }
 
         return playlistDetail;
     }
