@@ -7,7 +7,7 @@ class AlbumAnalysis extends Component {
   render() {
     return (
       <div id="landing">
-        <h1>Top Tracks Analysis<span className="back-button"><Link to="/">{"◀Back"}</Link></span></h1>
+        <h1>Top Tracks Analysis<span className="back-button"><Link to="/">{"◀ Back"}</Link></span></h1>
         <AlbumList />
       </div>
     );

@@ -1,7 +1,11 @@
 package com.nanderson.toptracks.service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +19,7 @@ import com.nanderson.toptracks.domain.AlbumAnalysisResult;
 import com.nanderson.toptracks.domain.AnalysisResult;
 import com.nanderson.toptracks.domain.Artist;
 import com.nanderson.toptracks.domain.ArtistAnalysisResult;
+import com.nanderson.toptracks.domain.GraphData;
 import com.nanderson.toptracks.domain.PlaylistDetail;
 import com.nanderson.toptracks.domain.PlaylistItem;
 import com.nanderson.toptracks.domain.Track;
@@ -157,5 +162,56 @@ public class AnalysisService {
         }
 
         return position;
+    }
+
+    public GraphData getGraphDataForArtists(List<PlaylistDetail> playlistsToAnalyze,
+            Integer numberToGraph)
+            throws AnalysisException {
+        List<ArtistAnalysisResult> artistAnalysis = getSortedMultiOccurrenceArtists(playlistsToAnalyze);
+
+        List<ArtistAnalysisResult> limitedArtists = artistAnalysis.subList(0,
+                numberToGraph > artistAnalysis.size() ? artistAnalysis.size() - 1 : numberToGraph);
+
+        Date minFirstAppearance = limitedArtists.stream().map(anRes -> anRes.getFirstAppearance())
+                .min(Comparator.naturalOrder()).get();
+        Date maxFinalAppearance = limitedArtists.stream().map(anRes -> anRes.getLatestAppearance())
+                .max(Comparator.naturalOrder()).get();
+
+        Calendar minDate = Calendar.getInstance();
+        minDate.setTime(minFirstAppearance);
+        int minYear = minDate.get(Calendar.YEAR);
+
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.setTime(maxFinalAppearance);
+        int maxYear = maxDate.get(Calendar.YEAR);
+
+        List<Integer> yearList = new ArrayList<>();
+        for (int year = minYear; year <= maxYear; year++) {
+            yearList.add(year);
+        }
+
+        List<Map<String, Integer>> results = new ArrayList<>();
+        for (Integer year : yearList) {
+            Map<String, Integer> graphEntry = new HashMap<>();
+            graphEntry.put("year", year);
+            for (ArtistAnalysisResult res : limitedArtists) {
+                int appearancesCountForYear = res.getAppearances().stream().map(date -> {
+                    Calendar appearanceTime = Calendar.getInstance();
+                    appearanceTime.setTime(date);
+                    return appearanceTime.get(Calendar.YEAR);
+                }).filter(appearanceYear -> appearanceYear.equals(year)).collect(Collectors.toList()).size();
+                if (appearancesCountForYear > 0) {
+                    graphEntry.put(res.getAnalysisItem().getName(), appearancesCountForYear);
+                }
+            }
+            results.add(graphEntry);
+        }
+
+        GraphData graphData = new GraphData();
+        graphData.setGraphData(results);
+        graphData.setAllDataPoints(
+                limitedArtists.stream().map(res -> res.getAnalysisItem().getName()).collect(Collectors.toList()));
+
+        return graphData;
     }
 }

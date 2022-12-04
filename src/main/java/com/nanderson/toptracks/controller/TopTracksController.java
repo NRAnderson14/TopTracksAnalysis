@@ -1,10 +1,12 @@
 package com.nanderson.toptracks.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.nanderson.toptracks.domain.AnalysisResult;
 import com.nanderson.toptracks.domain.AnalysisType;
+import com.nanderson.toptracks.domain.GraphData;
 import com.nanderson.toptracks.domain.Playlist;
 import com.nanderson.toptracks.domain.PlaylistDetail;
 import com.nanderson.toptracks.domain.TrackAnalysisResult;
@@ -124,6 +126,36 @@ public class TopTracksController {
                     break;
                 case ALBUM:
                     response = ResponseEntity.ok(analysisService.getSortedMultiOccurrenceAlbums(recapPlaylists));
+                    break;
+                default:
+                    response = ResponseEntity.badRequest().build();
+                    break;
+            }
+        } catch (Exception e) {
+            logger.error("Error getting current user playlists", e);
+            response = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return response;
+    }
+
+    @GetMapping("user/playlists/recaps/graph_data")
+    public ResponseEntity<GraphData> getUserRecapGraphData(@RequestParam("num_to_graph") Integer numberToGraph,
+            @RequestParam("type") String type) {
+        ResponseEntity<GraphData> response;
+
+        try {
+            List<PlaylistDetail> recapPlaylists = apiService.getRecapPlaylistDetails();
+            AnalysisType analysisType = AnalysisType.getFromDescription(type);
+            switch (analysisType) {
+                case TRACK:
+                    response = ResponseEntity.ok(analysisService.getGraphDataForArtists(recapPlaylists, numberToGraph));
+                    break;
+                case ARTIST:
+                    response = ResponseEntity.ok(analysisService.getGraphDataForArtists(recapPlaylists, numberToGraph));
+                    break;
+                case ALBUM:
+                    response = ResponseEntity.ok(analysisService.getGraphDataForArtists(recapPlaylists, numberToGraph));
                     break;
                 default:
                     response = ResponseEntity.badRequest().build();
