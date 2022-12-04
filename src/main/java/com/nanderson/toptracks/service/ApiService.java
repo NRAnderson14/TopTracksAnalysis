@@ -5,7 +5,9 @@ import java.time.Month;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -82,11 +84,12 @@ public class ApiService {
         PlaylistDetail playlistDetail = extractBody(playlistDetailResponse);
         // Setting a callback to the owning playlist for analysis purposes later
         playlistDetail.setBelongsTo(playlist.getId());
-        if ("Your Top Songs 2021".equals(playlist.getName())) {
-            LocalDateTime correctDate = LocalDateTime.of(2021, Month.DECEMBER, 1, 0, 0);
+        Optional<Date> adjustedDate = getCorrectedDate(playlist);
+
+        if (adjustedDate.isPresent()) {
             playlistDetail.getItems().stream().forEach(item -> {
                 item.setBelongsTo(playlist.getId());
-                item.setAddedAt(Date.from(correctDate.toInstant(ZoneOffset.ofHours(0))));
+                item.setAddedAt(adjustedDate.get());
             });
         } else {
             playlistDetail.getItems().stream().forEach(item -> item.setBelongsTo(playlist.getId()));
@@ -139,6 +142,18 @@ public class ApiService {
         } else {
             logger.error("Received non-200 response from Spotify: {}", receivedResponse.getStatusCodeValue());
             throw new SpotifyAPIException(receivedResponse.getStatusCode().toString());
+        }
+    }
+
+    private Optional<Date> getCorrectedDate(Playlist playlist) {
+        Map<String, Date> adjustedPlaylists = new HashMap<String, Date>();
+        adjustedPlaylists.put("Your Top Songs 2021", Date.from(LocalDateTime.of(2021, Month.DECEMBER, 1, 0, 0).toInstant(ZoneOffset.ofHours(0))));
+        adjustedPlaylists.put("Your Top Songs 2022", Date.from(LocalDateTime.of(2022, Month.DECEMBER, 1, 0, 0).toInstant(ZoneOffset.ofHours(0))));
+
+        if (adjustedPlaylists.containsKey(playlist.getName())) {
+            return Optional.of(adjustedPlaylists.get(playlist.getName()));
+        } else {
+            return Optional.empty();
         }
     }
 
